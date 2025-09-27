@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #f5f5f5; padding: 10px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { max-width: 500px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { color: #1e1e1e; margin-bottom: 20px; font-size: 1.2em; text-align: center; }
+        .content { display: flex; align-items: center; gap: 20px; }
+        .chart-container { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+        canvas { width: 100%; height: 100%; display: block; }
+        .percentage { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.1em; font-weight: bold; color: #1e1e1e; }
+        .checkboxes-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .checkbox-item { display: flex; justify-content: center; align-items: center; }
+        input[type="checkbox"] { width: 12px; height: 12px; cursor: pointer; accent-color: #b472e1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Attendance</h1>
+        <div class="content">
+            <div class="chart-container">
+                <canvas id="attendanceChart"></canvas>
+                <div class="percentage" id="percentage">100%</div>
+            </div>
+            <div class="checkboxes-grid" id="checkboxesContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const totalCheckboxes = 30;
+        let checkedCount = totalCheckboxes;
+        
+        function generateCheckboxes() {
+            const container = document.getElementById('checkboxesContainer');
+            for (let i = 1; i <= totalCheckboxes; i++) {
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'checkbox-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = true;
+                checkbox.addEventListener('change', updateChart);
+                checkboxItem.appendChild(checkbox);
+                container.appendChild(checkboxItem);
+            }
+        }
+        
+        function updateChart() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+            const percentage = Math.round((checkedCount / totalCheckboxes) * 100);
+            document.getElementById('percentage').textContent = `${percentage}%`;
+            drawDonutChart(percentage);
+        }
+        
+        function drawDonutChart(percentage) {
+            const canvas = document.getElementById('attendanceChart');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 5;
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            if (percentage > 0) {
+                const startAngle = -0.5 * Math.PI;
+                const endAngle = startAngle + (percentage / 100) * 2 * Math.PI;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = '#d6a9ff';
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius - 6, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        }
+      
+        window.onload = function() {
+            const canvas = document.getElementById('attendanceChart');
+            canvas.width = 100;
+            canvas.height = 100;
+            generateCheckboxes();
+            updateChart();
+        };
+    </script>
+</body>
+</html>
